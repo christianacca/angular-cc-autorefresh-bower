@@ -1,0 +1,23 @@
+{
+  "name": "angular-cc-autorefresh",
+  "version": "0.1.4",
+  "authors": [
+    "Christian Crowhurst <ghp@christianacca.e4ward.com> (http://codingmonster.co.uk)"
+  ],
+  "description": "Auto refresh angular directives",
+  "main": ["js/cc-autorefresh-tpls.js"],
+  "keywords": ["angular","refresh","schedule"],
+  "license": "MIT",
+  "homepage": "http://projects.codingmonster.co.uk/angular-cc-autorefresh",
+  "private": false,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.2"
+  }
+}
