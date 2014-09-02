@@ -1,0 +1,2 @@
+angular-cc-autorefresh-bower
+============================
