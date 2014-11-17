@@ -2,7 +2,7 @@
  * angular-cc-autorefresh
  * http://projects.codingmonster.co.uk/angular-cc-autorefresh
 
- * Version: 0.1.4 - 2014-09-02
+ * Version: 0.2.0 - 2014-11-17
  * License: MIT
  */
 angular.module("cc.autorefresh", ["cc.autorefresh.ccAutoRefreshFn","cc.autorefresh.ccAutoRefreshBtn"]);
@@ -19,21 +19,19 @@ angular.module("cc.autorefresh.ccAutoRefreshFn", [])
     .factory("_ccAutoRefreshUtils", ["$injector", function ($injector) {
         "use strict";
 
+        var exPoliciesLite = {
+            promiseFinExPolicy: $injector.get("$exceptionHandler"),
+            httpFailureFormatter: function (rejection) {
+                if (rejection instanceof Error) {
+                    return rejection;
+                }
+                return { isHttpCancel: rejection && rejection.status === 0 };
+            }
+        };
+
         function resolveExPoliciesSvc() {
-            // integrate with ccExceptionPoliciesModule if installed
-            // otherwise return a sufficient "lite" service
-            if ($injector.has("ccExceptionPolicies")) {
-                return $injector.get("ccExceptionPolicies");
-            }
-            else {
-                return {
-                    promiseFinExPolicy: $injector.get("$exceptionHandler"),
-                    httpFailureFormatter: function (rejection) {
-                        if (rejection instanceof Error) { return rejection; }
-                        return { isHttpCancel: rejection && rejection.status === 0 };
-                    }
-                };
-            }
+            // integrate with ccExceptionPoliciesModule if installed otherwise return a "lite" service
+            return $injector.has("ccExceptionPolicies") ? $injector.get("ccExceptionPolicies") : exPoliciesLite;
         }
 
         return {
@@ -330,21 +328,7 @@ angular.module("cc.autorefresh.ccAutoRefreshFn", [])
  *
  * @requires cc.autorefresh.ccAutoRefreshFn
  */
-/**
- * @ngdoc object
- * @name cc.autorefresh.ccAutoRefreshBtn.type:ccAutoRefreshDefaultTranslations
- *
- * @description
- * Default translations for the {@link cc.autorefresh.ccAutoRefreshBtn.directive:ccAutoRefreshBtn ccAutoRefreshBtn}
- * directive
- */
 angular.module("cc.autorefresh.ccAutoRefreshBtn", ["cc.autorefresh.ccAutoRefreshFn"])
-    .value("ccAutoRefreshDefaultTranslations", {
-        resumeTitle: "Resume",
-        pauseTitle: "Pause",
-        cancelTitle: "Cancel refresh",
-        refreshTitle: "Refresh now"
-    })
 /**
  * @ngdoc directive
  * @name cc.autorefresh.ccAutoRefreshBtn.directive:ccAutoRefreshBtn
@@ -367,9 +351,8 @@ angular.module("cc.autorefresh.ccAutoRefreshBtn", ["cc.autorefresh.ccAutoRefresh
  * @param {expression} refreshInterval
  *  Angular expression that determines the interval (milliseconds) that `refreshFn` will be executed.
  * @param {expression} refreshModel **Assignable** angular expression to data-bind the value returned by `refreshFn`.
- * @param {expression=} refreshTranslations An expression that returns overrides the default translations.
  */
-    .directive("ccAutoRefreshBtn", ["ccAutoRefreshDefaultTranslations", function (defaultTranslations) {
+    .directive("ccAutoRefreshBtn", [function () {
         "use strict";
 
         return {
@@ -378,32 +361,8 @@ angular.module("cc.autorefresh.ccAutoRefreshBtn", ["cc.autorefresh.ccAutoRefresh
             transclude: true,
             replace: true,
             scope: true,
-            templateUrl: "template/ccAutoRefreshBtn/ccAutoRefreshBtn.html",
-            controller: ["$q", "$scope", "$attrs", "_ccAutoRefreshUtils", function ($q, $scope, $attrs, utils) {
-
-                var exPolicies;
-
-                function fetchTranslations() {
-                    if (!$attrs.refreshTranslations) { return $q.when(defaultTranslations); }
-
-                    return $q.when($scope.$eval($attrs.refreshTranslations))
-                        .catch(function (ex) {
-                            $scope.ctrl.isPaused = true;
-                            return $q.reject(ex);
-                        })
-                        .catch(exPolicies.promiseFinExPolicy);
-                }
-
-                function initialise() {
-                    exPolicies = utils.resolveExPoliciesSvc();
-                    return fetchTranslations()
-                        .then(function (translations) {
-                            $scope.langs = translations;
-                        });
-                }
-
-                initialise();
-            }],
+            templateUrl: "app/vendor/angular-ccacca/autoRefresh/ccAutoRefreshBtn.html",
+            controller: [function () { }],
             link: function (scope, elem, attrs, ccAutoRefreshFn) {
                 scope.ctrl = ccAutoRefreshFn;
             }
