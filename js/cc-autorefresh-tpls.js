@@ -2,7 +2,7 @@
  * angular-cc-autorefresh
  * http://projects.codingmonster.co.uk/angular-cc-autorefresh
 
- * Version: 0.2.0 - 2014-11-17
+ * Version: 0.3.0 - 2015-11-21
  * License: MIT
  */
 angular.module("cc.autorefresh", ["cc.autorefresh.tpls", "cc.autorefresh.ccAutoRefreshFn","cc.autorefresh.ccAutoRefreshBtn"]);
@@ -20,13 +20,20 @@ angular.module("cc.autorefresh.ccAutoRefreshFn", [])
     .factory("_ccAutoRefreshUtils", ["$injector", function ($injector) {
         "use strict";
 
+        // note: according to the http spec network unavailable error should be returned as a status of 0
+        // note: prior to vs 1.4 there was no way to distinguish between a http request being cancelled and
+        // an error because of network being unavailable. This is very bad as our any exception handling
+        // code will see our 'isHttpCancel' set to true even for network errors :-(
+        var CANCEL_HTTP_STATUS = angular.version.minor > 3 ? -1 : 0;
+
         var exPoliciesLite = {
             promiseFinExPolicy: $injector.get("$exceptionHandler"),
             httpFailureFormatter: function (rejection) {
                 if (rejection instanceof Error) {
                     return rejection;
                 }
-                return { isHttpCancel: rejection && rejection.status === 0 };
+
+                return { isHttpCancel: rejection && rejection.status === CANCEL_HTTP_STATUS };
             }
         };
 
@@ -358,7 +365,7 @@ angular.module("cc.autorefresh.ccAutoRefreshBtn", ["cc.autorefresh.ccAutoRefresh
 
         return {
             restrict: "E",
-            require: "ccAutoRefreshFn",
+            require: "^ccAutoRefreshFn",
             transclude: true,
             replace: true,
             scope: true,
@@ -397,6 +404,7 @@ angular.module("cc.autorefresh.ccAutoRefreshBtn", ["cc.autorefresh.ccAutoRefresh
             }
         };
     }]);
+
 angular.module("app/vendor/angular-ccacca/autoRefresh/ccAutoRefreshBtn.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("app/vendor/angular-ccacca/autoRefresh/ccAutoRefreshBtn.html",
     "<div class=\"btn-group\" ng-show=\"ctrl.isVisible\">\n" +

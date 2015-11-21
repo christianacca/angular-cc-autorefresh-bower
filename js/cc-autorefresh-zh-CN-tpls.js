@@ -2,7 +2,7 @@
  * angular-cc-autorefresh
  * http://projects.codingmonster.co.uk/angular-cc-autorefresh
 
- * Version: 0.2.0 - 2014-11-17
+ * Version: 0.3.0 - 2015-11-21
  * License: MIT
  */
 
